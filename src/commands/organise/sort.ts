@@ -1,7 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable unicorn/prefer-module */
 /* eslint-disable unicorn/prefer-node-protocol */
-/* eslint-disable no-new */
 import {Command, Flags} from '@oclif/core'
 import * as fs from 'fs/promises'
 import exif from 'exifr'
@@ -9,6 +8,7 @@ import cli from 'cli-ux'
 import * as notifier from 'node-notifier'
 import {inspect} from 'util'
 import path = require('path')
+import {getPath} from '../../utils/get-path'
 
 export default class Sort extends Command {
   static description = 'Sort Folder'
@@ -31,30 +31,21 @@ export default class Sort extends Command {
     {
       name: 'folder',
       required: true,
-      description: 'The Folder Name to stats',
+      description: 'The folder path to sort',
     },
   ]
-
-  private getPath(folderName: string, ...other: string[]) {
-    let res = folderName
-    for (const n of other) {
-      res += `/${n}`
-    }
-
-    return res
-  }
 
   private async sortFile(date: Date, name: string, srcFolder: string, destFolder: string) {
     // check if folder exists
     const folderName = date.getFullYear().toString()
     try {
-      await fs.access(this.getPath(destFolder, folderName))
+      await fs.access(getPath(destFolder, folderName))
     } catch {
-      this.log(`Creating Dir ${this.getPath(destFolder, folderName)}`)
-      await fs.mkdir(this.getPath(destFolder, folderName))
+      this.log(`Creating Dir ${getPath(destFolder, folderName)}`)
+      await fs.mkdir(getPath(destFolder, folderName))
     }
 
-    fs.rename(this.getPath(srcFolder, name), this.getPath(destFolder, folderName, name))
+    fs.rename(getPath(srcFolder, name), getPath(destFolder, folderName, name))
   }
 
   async run(): Promise<void> {
