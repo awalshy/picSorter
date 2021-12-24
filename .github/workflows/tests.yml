@@ -20,9 +20,11 @@ jobs:
       with:
         cmd: install
     - uses: borales/actions-yarn@v2.3.0
+      name: Run tests
       with:
         cmd: test
     - uses: borales/actions-yarn@v2.3.0
+      name: Lint
       with:
         cmd: lint
-    
+
