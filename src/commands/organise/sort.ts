@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-array-for-each */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable unicorn/prefer-module */
 /* eslint-disable unicorn/prefer-node-protocol */
@@ -6,12 +7,13 @@ import * as fs from 'fs/promises'
 import exif from 'exifr'
 import cli from 'cli-ux'
 import * as notifier from 'node-notifier'
-import {inspect} from 'util'
 import path = require('path')
+import {moveFile} from '../../utils/move-file'
 import {getPath} from '../../utils/get-path'
+import { cwd } from 'process'
 
 export default class Sort extends Command {
-  static description = 'Sort Folder'
+  static description = 'Sort Images by year/month/date from folder'
 
   static examples: [
     `$ picsorter-cli sort <folder-path>
@@ -25,61 +27,78 @@ export default class Sort extends Command {
       description: 'Silence - No notification no logs',
       required: false,
     }),
+    forceSilence: Flags.boolean({
+      description: 'Silence Forced - No logs',
+    }),
   }
 
   static args = [
     {
-      name: 'folder',
-      required: true,
+      name: 'srcFolder',
+      required: false,
       description: 'The folder path to sort',
     },
+    {
+      name: 'destFolder',
+      require: false,
+      description: 'The folder where the sorted images will be moved to',
+    },
   ]
-
-  private async sortFile(date: Date, name: string, srcFolder: string, destFolder: string) {
-    // check if folder exists
-    const folderName = date.getFullYear().toString()
-    try {
-      await fs.access(getPath(destFolder, folderName))
-    } catch {
-      this.log(`Creating Dir ${getPath(destFolder, folderName)}`)
-      await fs.mkdir(getPath(destFolder, folderName))
-    }
-
-    fs.rename(getPath(srcFolder, name), getPath(destFolder, folderName, name))
-  }
 
   async run(): Promise<void> {
     const {args, flags} = await this.parse(Sort)
 
-    const destFolderPath = await cli.prompt('Dossier de Destination')
+    // Get Missing Information
+    let srcFolderPath = args.srcFolder
+    if (!srcFolderPath)
+      srcFolderPath = await cli.prompt('Source Folder')
+    let destFolderPath = args.destFolder
+    if (!destFolderPath)
+      destFolderPath = await cli.prompt('Destination Folder')
     try {
       await fs.access(destFolderPath)
     } catch {
-      const create  = await cli.confirm('Le dossier n\'existe pas. Voulez vous le créer ?')
+      const create  = await cli.confirm('The folder does not exist. Would you like to create it ?')
       if (!create)
-        this.error('Le dossier de destination n\'existe pas', {exit: 1})
+        this.error('The Folder does not exist', {exit: 1})
       await fs.mkdir(destFolderPath)
     }
 
-    cli.action.start('reading folder')
-    let dir = await fs.readdir(args.folder, {
+    // Gather information
+    cli.action.start('Reading folder')
+    const dir = await fs.readdir(srcFolderPath, {
       withFileTypes: true,
-    })
-    dir = dir.filter(f => !f.isDirectory())
+    }).then(res => res.filter(f => !f.isDirectory()))
+    const pictureCount = dir.length
+    cli.action.stop()
+    if (!flags.forceSilence)
+      this.log(`Found ${pictureCount} pictures and videos in the folder`)
 
-    setTimeout(() => {
-      cli.action.stop()
-      if (!flags.silent)
-        notifier.notify({
-          title: 'Sorting Finished !',
-          message: 'Your pictures are sorted in this folder',
-          icon: path.join(__dirname, '../../assets/icon.png'),
-        })
-    }, 5000)
-    for (const file of dir) {
-      const ex = await exif.parse(args.folder + file.name, ['DateTimeOriginal'])
-      this.log(`${file.name} - ${inspect(ex, false, null, true)} - ${new Date(ex.DateTimeOriginal).toDateString()}`)
-      await this.sortFile(ex.DateTimeOriginal, file.name, args.folder, destFolderPath)
+    console.log(cwd())
+
+    // Launch bar and sort files
+    const progress = cli.progress({
+      format: 'Sorting Pictures | {bar} | {value}/{total} Images',
+    })
+    progress.start(dir.length, 0)
+    for (const [index, file] of dir.entries()) {
+      console.log('\nHERE', getPath(cwd(), srcFolderPath, file.name))
+      const f = await fs.readFile(getPath(cwd(), srcFolderPath, file.name))
+      const ex = await exif.parse(f, ['DateTimeOriginal', 'CreateDate'])
+      console.log('HERE 2', ex)
+      await moveFile(file.name, srcFolderPath, destFolderPath, ex.DateTimeOriginal)
+      console.log('HERE 3')
+      progress.update(index)
     }
+
+    progress.stop()
+    if (!flags.forceSilence)
+      this.log('Finished sorting pictures. Enjoy !')
+    if (!flags.silent)
+      notifier.notify({
+        title: 'Sorting Finished !',
+        message: 'Your pictures are sorted in this folder',
+        icon: path.join(__dirname, '../../assets/icon.png'),
+      })
   }
 }
