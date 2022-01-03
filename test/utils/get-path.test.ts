@@ -4,7 +4,7 @@ import {getPath} from '../../src/utils/get-path'
 import {strict as assert} from 'assert'
 import {platform} from 'process'
 
-describe('Testinf getPath funtion', () => {
+describe('Testing getPath funtion', () => {
   if (platform === 'linux') {
     it('Folder and File', () => {
       assert.equal(getPath('folder', 'filename.ts'), 'folder/filename.ts')

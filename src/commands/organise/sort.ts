@@ -4,13 +4,13 @@
 /* eslint-disable unicorn/prefer-node-protocol */
 import {Command, Flags} from '@oclif/core'
 import * as fs from 'fs/promises'
-import exif from 'exifr'
+import * as ExifReader from 'exifreader'
 import cli from 'cli-ux'
 import * as notifier from 'node-notifier'
 import path = require('path')
 import {moveFile} from '../../utils/move-file'
 import {getPath} from '../../utils/get-path'
-import { cwd } from 'process'
+import {cwd} from 'process'
 
 export default class Sort extends Command {
   static description = 'Sort Images by year/month/date from folder'
@@ -82,12 +82,10 @@ export default class Sort extends Command {
     })
     progress.start(dir.length, 0)
     for (const [index, file] of dir.entries()) {
-      console.log('\nHERE', getPath(cwd(), srcFolderPath, file.name))
-      const f = await fs.readFile(getPath(cwd(), srcFolderPath, file.name))
-      const ex = await exif.parse(f, ['DateTimeOriginal', 'CreateDate'])
-      console.log('HERE 2', ex)
+      console.log('\nHERE', getPath(srcFolderPath, file.name))
+      const f = await fs.readFile(getPath(srcFolderPath, file.name))
+      const ex = ExifReader.load(f)
       await moveFile(file.name, srcFolderPath, destFolderPath, ex.DateTimeOriginal)
-      console.log('HERE 3')
       progress.update(index)
     }
 

@@ -1,10 +1,7 @@
 /* eslint-disable unicorn/prefer-node-protocol */
 import {rename, access, mkdir} from 'fs/promises'
 import {getPath} from './get-path'
-
-function isMeme(name: string): boolean {
-  return name.includes('FB_IMG')
-}
+import type {StringArrayTag} from 'exifreader'
 
 const months = [
   'Janvier',
@@ -21,17 +18,51 @@ const months = [
   'Décembre',
 ]
 
-export async function moveFile(name: string, srcFolder: string, destFolder: string, date: Date): Promise<void> {
+export function isValidDate(date: Date) {
+  return date instanceof Date && !Number.isNaN(date.getTime())
+}
+
+export function isMeme(name: string): boolean {
+  return name.includes('FB_IMG')
+}
+
+export async function moveFile(name: string, srcFolder: string, destFolder: string, d: StringArrayTag | undefined): Promise<void> {
   // Check if folder exists
+  if (!d) {
+    try {
+      await access(getPath(destFolder, 'no_date'))
+    } catch {
+      await mkdir(getPath(destFolder, 'no_date'))
+    }
+
+    await rename(getPath(srcFolder, name), getPath(destFolder, 'no_date', name))
+    return
+  }
+
   if (isMeme(name)) {
+    try {
+      await access(getPath(destFolder, 'memes'))
+    } catch {
+      await mkdir(getPath(destFolder, 'memes'))
+    }
+
     await rename(getPath(srcFolder, name), getPath(destFolder, 'memes', name))
     return
+  }
+
+  let date = new Date(d.value[0])
+  // If date is invalid, change string
+  if (!isValidDate(date)) {
+    console.log('NaN so importing other way date')
+    const splitedDateTime = d.value[0].split(' ')
+    const splitedDate = splitedDateTime[0].replace(/:/gm, '/')
+    const reassembledDate = [splitedDate, splitedDateTime[1]].join(' ')
+    date = new Date(reassembledDate)
   }
 
   // Year
   const yearFolderName = date.getFullYear().toString()
   const yearFolderPath = getPath(destFolder, yearFolderName)
-  console.log('YEAR FOLDER', yearFolderPath)
   try {
     await access(yearFolderPath)
   } catch {
@@ -41,7 +72,6 @@ export async function moveFile(name: string, srcFolder: string, destFolder: stri
   // Month
   const monthFolderName = months[date.getMonth()]
   const monthFolderPath = getPath(yearFolderPath, monthFolderName)
-  console.log('MONTH FOLDER PATH', monthFolderPath)
   try {
     await access(monthFolderPath)
   } catch {
@@ -51,14 +81,12 @@ export async function moveFile(name: string, srcFolder: string, destFolder: stri
   // Day
   const dayFolderName = date.getDate().toString()
   const dayFolderPath = getPath(monthFolderPath, dayFolderName)
-  console.log('DAY FOLDER PATH', dayFolderPath)
   try {
     await access(dayFolderPath)
   } catch {
     await mkdir(dayFolderPath)
   }
 
-  console.log('FROM', getPath(srcFolder, name), 'to', getPath(dayFolderPath, name))
   // Move file
   await rename(getPath(srcFolder, name), getPath(dayFolderPath, name))
 }
