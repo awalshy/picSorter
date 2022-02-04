@@ -4,9 +4,9 @@
 /* eslint-disable unicorn/prefer-node-protocol */
 import {Command, Flags} from '@oclif/core'
 import * as fs from 'fs/promises'
-import * as ExifReader from 'exifreader'
 import cli from 'cli-ux'
 import * as notifier from 'node-notifier'
+import * as ExifReader from 'exifreader'
 import path = require('path')
 import {moveFile} from '../../utils/move-file'
 import {getPath} from '../../utils/get-path'
@@ -15,10 +15,10 @@ import {cwd} from 'process'
 export default class Sort extends Command {
   static description = 'Sort Images by year/month/date from folder'
 
-  static examples: [
+  static examples = [
     `$ picsorter-cli sort <folder-path>
       2057 images found and sortable
-    `
+    `,
   ]
 
   static flags = {
