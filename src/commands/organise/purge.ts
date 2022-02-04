@@ -1,9 +1,7 @@
-import { Command } from "@oclif/core"
-import { cli } from "cli-ux"
+/* eslint-disable unicorn/prefer-node-protocol */
+import {Command} from '@oclif/core'
 import * as fs from 'fs/promises'
-import * as notify from "node-notifier"
-import path = require("path/posix")
-import { isMeme, isScreenshot } from "../../utils/move-file"
+import {isMeme, isScreenshot} from '../../utils/move-file'
 
 export default class Purge extends Command {
   static description = 'Purge folder from all screenshots and fb'
@@ -11,7 +9,7 @@ export default class Purge extends Command {
   static examples = [
     `$ picsorter-cli purge <folder-path>
       57 images deleted
-    `
+    `,
   ]
 
   static args = [
