@@ -30,6 +30,20 @@ export function isScreenshot(name: string): boolean {
   return name.includes('Screenshot_')
 }
 
+export function renameFolder(name: string, getMonth: boolean): string | undefined {
+  const splited = name.split('_')
+  if (splited.length < 2)
+    return
+  const monthNumber = Number(splited[0])
+  if (monthNumber === 0 && getMonth) return
+  if (monthNumber === 0) return splited[1]
+  if (monthNumber < 1 || monthNumber > 12 || Number.isNaN(monthNumber)) return
+  const month = months[monthNumber - 1]
+  if (getMonth) return month
+  const eventName = splited[1]
+  return `${month}/${eventName}`
+}
+
 export async function moveFile(name: string, srcFolder: string, destFolder: string, d: StringArrayTag | undefined): Promise<void> {
   // Check if folder exists
   if (!d) {
