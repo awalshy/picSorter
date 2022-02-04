@@ -24,10 +24,5 @@ export default class Reorganise extends Command {
     let folder = args.folder
     if (!folder)
       folder = await cli.prompt('Folder to reorganise')
-
-    cli.action.start('Reorganising...')
-    setTimeout(() => {
-      cli.action.stop()
-    }, 3000)
   }
 }

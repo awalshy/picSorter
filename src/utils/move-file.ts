@@ -26,6 +26,10 @@ export function isMeme(name: string): boolean {
   return name.includes('FB_IMG')
 }
 
+export function isScreenshot(name: string): boolean {
+  return name.includes('Screenshot_')
+}
+
 export async function moveFile(name: string, srcFolder: string, destFolder: string, d: StringArrayTag | undefined): Promise<void> {
   // Check if folder exists
   if (!d) {
