@@ -1,7 +1,7 @@
 {
   "name": "picsorter-cli",
   "description": "Picture Sorter CLI",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Arthur Walsh",
   "bin": {
     "picsorter-cli": "./bin/run"
@@ -72,6 +72,9 @@
       "Peuple": {
         "description": "Manage Events on Peuple"
       }
+    },
+    "macos": {
+      "identifier": "fr.walsharthur.cli"
     }
   },
   "repository": "./awalshy",

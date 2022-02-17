@@ -36,15 +36,15 @@ describe('Testing isScreenshot function', () => {
 
 describe('Testing renameFolder function', () => {
   it('06_Aprem Cerises', () => {
-    assert.equal(renameFolder('06_Aprem Cerise'), 'Juin/Aprem Cerise')
+    assert.equal(renameFolder('06_Aprem Cerise', false), 'Juin/Aprem Cerise')
   })
   it('12_Réveillon chez Clémence', () => {
-    assert.equal(renameFolder('12_Réveillon chez Clémence'), 'Décembre/Réveillon chez Clémence')
+    assert.equal(renameFolder('12_Réveillon chez Clémence', false), 'Décembre/Réveillon chez Clémence')
   })
   it('Invalid month', () => {
-    assert.equal(renameFolder('13_Invalid'), undefined)
+    assert.equal(renameFolder('13_Invalid', false), undefined)
   })
   it('Invalid format', () => {
-    assert.equal(renameFolder('DossierNormal'), undefined)
+    assert.equal(renameFolder('DossierNormal', false), undefined)
   })
 })

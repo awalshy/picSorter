@@ -11,6 +11,7 @@ import path = require('path')
 import {moveFile} from '../../utils/move-file'
 import {getPath} from '../../utils/get-path'
 import {cwd} from 'process'
+import {getDateWA, isWhatsAppPicture} from '../../utils/whatsapp'
 
 export default class Sort extends Command {
   static description = 'Sort Images by year/month/date from folder'
@@ -82,11 +83,29 @@ export default class Sort extends Command {
     })
     progress.start(dir.length, 0)
     for (const [index, file] of dir.entries()) {
-      console.log('\nHERE', getPath(srcFolderPath, file.name))
-      const f = await fs.readFile(getPath(srcFolderPath, file.name))
-      const ex = ExifReader.load(f)
-      await moveFile(file.name, srcFolderPath, destFolderPath, ex.DateTimeOriginal)
-      progress.update(index)
+      try {
+        if (isWhatsAppPicture(file.name)) {
+          const date = getDateWA(file.name)
+          if (!date)
+            continue
+          await moveFile(file.name, srcFolderPath, destFolderPath, date)
+        } else {
+          const f = await fs.readFile(getPath(srcFolderPath, file.name))
+          const ex = ExifReader.load(f)
+          await moveFile(file.name, srcFolderPath, destFolderPath, ex.DateTimeOriginal)
+        }
+
+        progress.update(index)
+      } catch {
+        console.log('An Error Occured')
+        const c = await cli.confirm('Continue ?')
+        if (c)
+          continue
+        else {
+          progress.stop()
+          return
+        }
+      }
     }
 
     progress.stop()

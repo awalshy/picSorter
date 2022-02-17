@@ -44,7 +44,7 @@ export function renameFolder(name: string, getMonth: boolean): string | undefine
   return `${month}/${eventName}`
 }
 
-export async function moveFile(name: string, srcFolder: string, destFolder: string, d: StringArrayTag | undefined): Promise<void> {
+export async function moveFile(name: string, srcFolder: string, destFolder: string, d: StringArrayTag | number | undefined): Promise<void> {
   // Check if folder exists
   if (!d) {
     try {
@@ -57,7 +57,7 @@ export async function moveFile(name: string, srcFolder: string, destFolder: stri
     return
   }
 
-  if (isMeme(name)) {
+  if (isMeme(name) || isScreenshot(name)) {
     try {
       await access(getPath(destFolder, 'memes'))
     } catch {
@@ -68,9 +68,9 @@ export async function moveFile(name: string, srcFolder: string, destFolder: stri
     return
   }
 
-  let date = new Date(d.value[0])
+  let date = new Date(typeof d === 'number' ? d : d.value[0])
   // If date is invalid, change string
-  if (!isValidDate(date)) {
+  if (!isValidDate(date) && typeof d !== 'number') {
     console.log('NaN so importing other way date')
     const splitedDateTime = d.value[0].split(' ')
     const splitedDate = splitedDateTime[0].replace(/:/gm, '/')

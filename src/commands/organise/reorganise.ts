@@ -59,8 +59,6 @@ export default class Reorganise extends Command {
       if (m && !months.includes(m))
         months.push(m)
     }
-  
-    console.log(months)
 
     // Create Months folders
     const mp = months.map(m => fs.mkdir(`${args.folder}/${m}`))
