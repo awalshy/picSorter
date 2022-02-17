@@ -6,7 +6,7 @@
   "bin": {
     "picsorter-cli": "./bin/run"
   },
-  "bugs": "https://github.com/./awalshy/issues",
+  "bugs": "https://github.com/awalshy/picSorter/issues",
   "dependencies": {
     "@oclif/core": "^1",
     "@oclif/plugin-help": "^5",
@@ -48,7 +48,7 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "homepage": "https://github.com/./awalshy",
+  "homepage": "https://github.com/awalshy/picSorter",
   "keywords": [
     "oclif"
   ],
@@ -77,12 +77,12 @@
       "identifier": "fr.walsharthur.cli"
     }
   },
-  "repository": "./awalshy",
+  "repository": ".",
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
     "lint": "eslint . --ext .ts --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
-    "prepack": "yarn build && oclif manifest && oclif readme",
+    "prepack": "yarn build && oclif manifest",
     "test": "nyc mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md"
   },
